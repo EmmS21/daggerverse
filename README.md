@@ -18,5 +18,5 @@ repo - this should be a string with a link to your Docker Image
 tag - this should be the tag related to your Docker Image
 
 test call:
-dagger call build-test --src=../../ --repo=emms21/interviewsageai --tag=latest
+`dagger call build-test --src=../../ --repo=emms21/interviewsageai --tag=latest`
 
