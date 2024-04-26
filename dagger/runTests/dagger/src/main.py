@@ -14,8 +14,7 @@ if appropriate. All modules should have a short description.
 """
 
 import dagger
-from dagger import dag, function, object_type, Directory, Container
-import os
+from dagger import dag, function, object_type 
 
 @object_type
 class RunTests:
@@ -29,7 +28,6 @@ class RunTests:
             dag.container()
             .from_(image_address)
             .with_mounted_directory("/app", src)
-            .with_workdir("/app")
             .with_exec(["sh", "-c", "npm run test 2>&1"])
             .stdout()
         )
