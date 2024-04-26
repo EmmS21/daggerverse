@@ -20,7 +20,7 @@ from dagger import dag, function, object_type
 class RunTests:
     @function
     def test(self) -> str:
-        return "This is a module to run Jest unit tests on a NodeJS application"
+        return "This is a module to run unit tests on a NodeJS application"
     @function
     async def build_test(self, src: dagger.Directory, repo: str, tag: str) -> str:
         image_address = f"docker.io/{repo}:{tag}"
