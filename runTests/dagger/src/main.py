@@ -1,26 +1,39 @@
 """A generated module for RunTests functions
 
-This module has been generated via dagger init and serves as a reference to
-basic module structure as you get started with Dagger.
+This module provides functionality to run unit tests for NodeJS projects.
 
-Two functions have been pre-created. You can modify, delete, or add to them,
-as needed. They demonstrate usage of arguments and return types using simple
-echo and grep commands. The functions can be called from the dagger CLI or
-from one of the SDKs.
+This module requires the absolute path to your working directory to be provided as the 'src' argument. This is necessary to mount the project directory into the Docker container where the tests will be executed.
 
-The first line in this comment block is a short description line and the
-rest is a long description with more detail on the module's purpose or usage,
-if appropriate. All modules should have a short description.
+The 'repo' argument specifies the Docker image associated with the project, and the 'tag' argument specifies the tag associated with the Docker image.
+
+Example test call:
+dagger call build-test --src=../../ --repo=test123/testImage --tag=latest
+
 """
+
 
 import dagger
 from dagger import dag, function, object_type 
 
 @object_type
 class RunTests:
+    """
+        Returns a description of the module.
+    """
     @function
     def test(self) -> str:
         return "This is a module to run unit tests on a NodeJS application"
+
+    """Builds and executes unit tests for the NodeJS project.
+
+        Args:
+            src (dagger.Directory): The absolute path to the project's working directory.
+            repo (str): The Docker image associated with the project.
+            tag (str): The tag associated with the Docker image.
+
+        Returns:
+            str: The result of running the unit tests.
+    """
     @function
     async def build_test(self, src: dagger.Directory, repo: str, tag: str) -> str:
         image_address = f"docker.io/{repo}:{tag}"
