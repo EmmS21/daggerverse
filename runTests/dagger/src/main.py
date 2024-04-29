@@ -1,4 +1,5 @@
-"""A generated module for RunTests functions
+"""
+A generated module for RunTests functions
 
 This module provides functionality to run unit tests for NodeJS projects.
 

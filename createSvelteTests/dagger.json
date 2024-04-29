@@ -2,5 +2,6 @@
   "name": "createSvelteTests",
   "sdk": "typescript",
   "source": "dagger",
-  "engineVersion": "v0.10.2"
+  "engineVersion": "v0.10.2",
+  "version": "v1.0.0"
 }
