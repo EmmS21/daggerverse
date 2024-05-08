@@ -73,7 +73,7 @@ class CreateSvelteTests {
       }
   }
 
-  /* 
+  /**  
     Custom error handling
   */
  private async checkExists(container: Container, path: string, errorMessage: string, extraInfo: string) {
@@ -91,7 +91,7 @@ class CreateSvelteTests {
   }
  }
 
-  /*
+  /** 
     Analyses code and returns unit test suggestions
   */
   private async analyzeSvelteComponent(content: string, 
@@ -119,7 +119,7 @@ class CreateSvelteTests {
     return this.writeCodeToFile(response, container)
   }
 
-  /* 
+  /**  
     This function will generate suggestions for unit tests based on both the code being tested and user feedback
   */
   private async generateOutput(apiKey: string, systemPrompt: string, humanPrompt: string): Promise<string> {
@@ -146,7 +146,7 @@ class CreateSvelteTests {
     }
   }
 
-  /*
+  /** 
     Write unit tests and echo output
   */
   private async writeCodeToFile(content: string, container: Container): Promise<string> {
