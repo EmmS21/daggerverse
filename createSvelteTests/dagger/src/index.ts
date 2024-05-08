@@ -6,7 +6,7 @@ import { BufferMemory } from "langchain/memory";
 import util from 'util';
 import { exec } from 'child_process';
 
-/*
+/**
   This Dagger module automates the process of creating unit tests for Sveltekit projects by leveraging LangChain AI capabilities. 
   It provides a streamlined workflow for generating unit tests based on the provided Svelte component code.
 
@@ -25,7 +25,7 @@ class CreateSvelteTests {
   static memory: BufferMemory = new BufferMemory({ returnMessages: true, memoryKey: "history" });
 
   @func()
-  /*
+  /** 
     Generates unit tests for Sveltekit projects based on the provided Svelte component code, folder structure, and file paths.
 
     Args:
