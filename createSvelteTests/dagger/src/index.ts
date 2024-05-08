@@ -49,19 +49,11 @@ class CreateSvelteTests {
 
     try {
       const folderPath = `/mnt/src/${folder}`;
-      const checkFolderExists = await container
-        .withExec(["ls", "-la", folderPath])
-        .stdout();
-      if (!checkFolderExists) {
-        throw new Error(`Folder: ${folder} not found`);
-      }
+      await this.checkExists(container, folderPath, `Folder ${folder} not found`, dirStructure);
+
       const filePath = `${folderPath}/${filename}`;
-      const checkFileExists = await container
-        .withExec(["ls", "-la", filePath])
-        .stdout();
-      if (!checkFileExists) {
-        throw new Error(`File: ${filename} not found`);
-      }
+      await this.checkExists(container, filePath, `File: ${filename} not found`, folderPath);
+
       const content = await container
         .withExec(["cat", filePath])
         .stdout();
@@ -80,7 +72,25 @@ class CreateSvelteTests {
         throw new Error(`Error: ${error.message}`);
       }
   }
-  
+
+  /* 
+    Custom error handling
+  */
+ private async checkExists(container: Container, path: string, errorMessage: string, extraInfo: string) {
+  try {
+    await container.withExec(["ls", "-la", path]).stdout();
+  } catch (error) {
+      if(path.includes('.')) {
+        const folderPath = path.substring(0, path.lastIndexOf('/'));
+        const output = await container.withExec(["ls", "-la", folderPath]).stdout();
+        const filesList = output.split('\n').filter(line => !line.startsWith('total')).join('\n');
+        throw new Error(`${errorMessage}. Files in directory:\n${filesList}`);
+      } else {
+        throw new Error(`${errorMessage}. Project structure:\n${extraInfo}`);
+      }
+  }
+ }
+
   /*
     Analyses code and returns unit test suggestions
   */
@@ -100,11 +110,11 @@ class CreateSvelteTests {
     }
 
     systemPrompt = `Based on the accepted test suggestions, provide the full implementation code for these tests using Vitest. Include detailed assertions to comprehensively validate the component behaviors. Use the data-testid to identify elements. Include necessary imports for the tests. This is the location of the page being tested, ensure the import statement is named appropriately ${filePath}. Assume the location of the test code you are writing is in the folder tests. This is the structure of my project: ${dirStructure}, use this context to ensure the component is correctly imported, keeping in mind how to appropriately import components in Sveltekit based on relative paths. Keep in mind that describe, it, expect, beforeEach are all imported from vitest. Include these imports if they are used and prioritize using methods available in vitest where possible. If mocking functions is necessary, do not use Jest, use vitest`;
-    humanPrompt = "Provide the detailed test implementation code now.";
+    humanPrompt = "Provide the full detailed code for the unit tests suggested now.";
     response = await this.generateOutput(apiKey, systemPrompt, humanPrompt)
 
     systemPrompt = 'You are a Typescript expert, your role is to ensure type annotations are included accurately in all code. Use appropriate descriptive types. Make no other changes other than this, aside from ensuring all assertions are included. If any assertions are missing, add these assertions';
-    humanPrompt = "Include type annotations for the tests in the previous code. Ensure to return the fill code with only these changes."
+    humanPrompt = "Include type annotations for the tests in the previous code. Ensure to return the full code with only these changes."
     response = await this.generateOutput(apiKey, systemPrompt, humanPrompt)
     return this.writeCodeToFile(response, container)
   }

@@ -42,6 +42,7 @@ class RunTests:
             dag.container()
             .from_(image_address)
             .with_mounted_directory("/app", src)
+            .with_exec(["sh", "-c", "npm install @rollup/rollup-linux-arm64-gnu || true"])
             .with_exec(["sh", "-c", "npm run test 2>&1"])
             .stdout()
         )
