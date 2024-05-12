@@ -19,4 +19,4 @@ The module defines a class `FetchSpreadsheetData` with a method `fetch_data` tha
 - The function returns a JSON formatted string. If transaction data is present, it returns a JSON string representing an array of transactions, where each transaction is a dictionary with column headers as keys. If no data is found, it returns an empty array '[]' in JSON format.
 
 ## Example Call:
-dagger call fetch-data --apiKey=env:[KEY] --sheet=env:[KEY]
+`dagger call fetch-data --apiKey=env:[KEY] --sheet=env:[KEY]`
