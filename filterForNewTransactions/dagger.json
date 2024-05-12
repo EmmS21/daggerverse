@@ -1,0 +1,12 @@
+{
+  "name": "filterForNewTransactions",
+  "sdk": "python",
+  "dependencies": [
+    {
+      "name": "FetchSpreadsheetData",
+      "source": "github.com/EmmS21/daggerverse/fetchSpreadsheetData@678ae5ba45bae707d1081cda300919b3ff77256c"
+    }
+  ],
+  "source": "dagger",
+  "engineVersion": "v0.11.3"
+}
