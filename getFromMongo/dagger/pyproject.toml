@@ -1,0 +1,9 @@
+[project]
+name = "main"
+version = "0.0.1"
+dependencies = ["pymongo"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
