@@ -103,18 +103,17 @@ class CreateSvelteTests {
   static memory: BufferMemory = new BufferMemory({ returnMessages: true, memoryKey: "history" });
 
   @func()
-  /** 
-    Generates unit tests for Sveltekit projects based on the provided Svelte component code, folder structure, and file paths.
-
-    Args:
-      root (dagger.Directory): The root directory of the Svelte project.
-    - folder (str): The folder containing the Svelte component.
-    - filename (str): The filename of the Svelte component.
-    - token (Secret): A secret token required for authentication.
-
-    Returns:
-    Directory: A directory containing the generated unit test files.
-  */
+  /**
+   * Generates unit tests for SvelteKit projects based on the provided Svelte component code, folder structure, and file paths.
+   * 
+   * @param {Directory} root - The root directory of the SvelteKit project.
+   * @param {string} folder - The folder containing the SvelteKit component.
+   * @param {string} filename - The filename of the SvelteKit component.
+   * @param {Secret} token - A secret token required for authentication with OpenAI.
+   * 
+   * @returns {Promise<Directory>} A directory containing the generated unit test files.
+   * 
+   */
   async generateUnitTests(root: Directory, folder: string, filename: string, token: Secret): Promise<Directory>{  
     const plainTextApiKey = await token.plaintext()
     const tempDir = root.withNewDirectory("/src/tests", { permissions: 0o777 });
