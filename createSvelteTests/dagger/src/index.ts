@@ -1,5 +1,5 @@
 /**
- * Module: CreateSvelteTests
+ * Module Name: CreateSvelteTests
  *
  * This Dagger module automates the process of creating unit tests for SvelteKit projects
  * using AI through Langchain to chain a process that generates suggestions for unit tests iteratively
