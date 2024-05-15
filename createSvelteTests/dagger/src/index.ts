@@ -1,3 +1,91 @@
+/**
+ * Module: CreateSvelteTests
+ *
+ * This Dagger module automates the process of creating unit tests for SvelteKit projects
+ * using AI through Langchain to chain a process that generates suggestions for unit tests iteratively
+ * based on best practices. The Langchain ConversationChain then generates unit tests based on the suggestions made.
+ * This code is written into a file that is exported and returned when a user runs this method
+ * 
+ * Function: generateUnitTests
+ * 
+ * Description:
+ * The generateUnitTests function uses LangChain to create a conversational chat 
+ * that generates suggestions for unit tests twice. 
+ * This approach ensures the suggestions meet best practices and allows for refinement
+ * based on previous responses. The function then generates unit tests based on these 
+ * refined suggestions, writes the tests to a file, and outputs the test file.
+ * 
+ * Args:
+ * - root (dagger.Directory): The root directory of the Sveltekit project
+ * - folder (string): The folder containing the Sveltekit component
+ * - filename (string): The filename of the Sveltekit component
+ * - token (Secret): A secret token required for authenticating with OpenAI
+ * 
+ * Returns:
+ * File: A file containing the generated unit tests
+ * 
+ * Private Functions
+ * 
+ * Function: checkExists ->
+ * Descritption: 
+ * This function verifies the existence of a specified path within the container. 
+ * If the path does not exist, it throws an error with detailed information about the directory structure 
+ * or files present in the directory.
+ * 
+ * Args:
+ * - container (Container): The Dagger container
+ * - path (string): The path to check
+ * - errorMessage (string): The error message to throw if the path does not exist
+ * - extraInfo (string): Additional information to include in the error message
+ * 
+ * Returns:
+ * None, but throws an error if the path does not exist.
+ * 
+ * Function: analyzeSvelteComponent ->
+ * Description:
+ * This function analyzes the provided Svelte component code and generates suggestions for unit tests 
+ * using LangChain. It iteratively refines these suggestions to ensure they meet best practices.
+ * 
+ * Args:
+ * - content (string): The content of the Sveltekit component
+ * - apiKey (string): The OpenAI API key
+ * - filePath (string): The path to the Svelte component file
+ * - dirStructure (string): The directory structure of the project
+ * - container (Container): The Dagger container
+ * 
+ * Returns:
+ * string: The final unit test code to be written to a file
+ * 
+ * Function: generateOutput ->
+ * Description:
+ * This function generates output from LangChain based on the provided system and human prompts.
+ * It uses a conversational chain to refine the suggestions for unit tests iteratively.
+ * 
+ * Args:
+ * - apiKey (string): The OpenAI API key
+ * - systemPrompt (string): The system prompt to provide context for the AI
+ * - humanPrompt (string): The human prompt to request specific output from the AI
+ * 
+ * Returns:
+ * string: The genereated output from LangChain
+ * 
+ * Function: writeCodeToFile ->
+ * Description:
+ * This function writes the generated unit test code to a file within the container. 
+ * It extracts the TypeScript code block from the AI's response and 
+ * ensures it is correctly formatted and written to the file.
+ * 
+ * Args:
+ * - content (string): The content to write to the file
+ * - container (Container): The Dagger containe
+ * 
+ * Returns:
+ * string: The path to the written test file
+ * 
+ * Example Call:
+ * - dagger call generateUnitTests --root='../src' --folder:'routes' --filename='+page.svelte' --token=env:OPENAI  export --path=/Users/test123 
+ */
+
 import { dag, Container, Directory, object, func, Secret } from "@dagger.io/dagger"
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
@@ -10,17 +98,6 @@ import { exec } from 'child_process';
 @object()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class CreateSvelteTests {
-  /**
-  This Dagger module automates the process of creating unit tests for Sveltekit projects by leveraging LangChain AI capabilities. 
-  It provides a streamlined workflow for generating unit tests based on the provided Svelte component code.
-
-  Start off by setting the secret `OPEN_AI` in your environment:
-  `export OPEN_AI=your_secret_value`
-
-  Example test call:
-  dagger call generateUnitTests --root='../src' --folder:'routes' --filename='+page.svelte' --token=env:OPENAI  export --path=/Users/test123 
-
-*/
   execPromise = util.promisify(exec);
   static historyPlaceholder: MessagesPlaceholder = new MessagesPlaceholder("history");
   static memory: BufferMemory = new BufferMemory({ returnMessages: true, memoryKey: "history" });
@@ -73,7 +150,6 @@ class CreateSvelteTests {
         throw new Error(`Error: ${error.message}`);
       }
   }
-
   /**  
     Custom error handling
   */
@@ -91,7 +167,6 @@ class CreateSvelteTests {
       }
   }
  }
-
   /** 
     Analyses code and returns unit test suggestions
   */
@@ -119,7 +194,6 @@ class CreateSvelteTests {
     response = await this.generateOutput(apiKey, systemPrompt, humanPrompt)
     return this.writeCodeToFile(response, container)
   }
-
   /**  
     This function will generate suggestions for unit tests based on both the code being tested and user feedback
   */
@@ -146,7 +220,6 @@ class CreateSvelteTests {
         throw new Error(`OpenAI :${error.message}`)
     }
   }
-
   /** 
     Write unit tests and echo output
   */
