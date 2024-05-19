@@ -27,6 +27,7 @@ from dagger import function, object_type, Secret
 import json
 import pymongo
 from pymongo.errors import AutoReconnect, OperationFailure
+from datetime import datetime
 
 @object_type
 class GetFromMongo:
@@ -69,7 +70,14 @@ class GetFromMongo:
         aggregatedData = list(db.aggregate(pipeline))
         response = {}
         for week_data in aggregatedData:
-            week_str = "Week: " + week_data['_id'].strftime("%Y-%m-%d")
+            week_id = week_data['_id']
+            if isinstance(week_id, str):
+                try:
+                    week_id = datetime.strptime(week_id, "%m/%d/%y")
+                except ValueError:
+                    print(f"Skipping invalid date format: {week_id}")
+                    continue
+            week_str = "Week: " + week_id.strftime("%Y-%m-%d")
             categories = week_data.get("Categories", [])
             total_week = week_data.get("TotalWeek", 0)
             categories_data = {}
