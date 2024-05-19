@@ -75,7 +75,6 @@ class GetFromMongo:
                 try:
                     week_id = datetime.strptime(week_id, "%m/%d/%y")
                 except ValueError:
-                    print(f"Skipping invalid date format: {week_id}")
                     continue
             week_str = "Week: " + week_id.strftime("%Y-%m-%d")
             categories = week_data.get("Categories", [])
