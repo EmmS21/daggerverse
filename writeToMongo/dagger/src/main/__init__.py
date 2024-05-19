@@ -59,7 +59,7 @@ class WriteToMongo:
                 )
         except RuntimeError as e:
                 raise RuntimeError("Failed to write to MongoDB") from e
-        return json.dumps(transactions)
+        return 'Success'
 
     def authenticate(self, connection_string: str, database: str, collection: str):
         """Authenticates with MongoDB and returns a reference to the transactions collection."""
