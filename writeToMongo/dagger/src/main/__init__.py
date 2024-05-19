@@ -47,14 +47,11 @@ class WriteToMongo:
         parsed_data = json.loads(transactions)
         try:
             for transaction in parsed_data:
-                print('***', transaction)
-                print('!!!', parsed_data)
                 transaction_id = transaction.get('Transaction ID')
                 if not transaction:
                     print("Skipping transaction without Transaction ID")
                     continue
                 update_document = {"$set": {key: value for key, value in transaction.items() if key}}
-                print('Update document:', update_document)
                 transactions_collection.update_one(
                     filter={'Transaction ID': transaction_id},
                     update=update_document,
