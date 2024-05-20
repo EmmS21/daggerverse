@@ -79,7 +79,7 @@ class GetAdvice:
         openai = ChatOpenAI(openai_api_key=openai_secret_key, model_name="gpt-3.5-turbo")
         
         template = """
-        You are a financial advisor tasked with providing weekly spending insights, comparing these against historical data, advising on budget adherence for a $500 monthly limit on variable expenses, and considering shared expenses between Emmanuel and Jasmine. Generate advice that is highly personalized and summarized, focusing on cost-effective solutions and concise summaries. The advice should dynamically adapt based on their financial goals and the feedback that you have been given from your history.        
+        You are a financial advisor tasked with providing weekly spending insights, comparing these against historical data, advising on budget adherence for a $500 monthly limit on variable expenses, and considering shared expenses between Emmanuel and Jasmine. Generate advice that is highly personalized and summarized, focusing on cost-effective solutions and concise summaries. The advice should dynamically adapt based on their financial goals and the feedback that you have been given from your history. Keep your advice concise, highly personalized and actionable, ensuring it does not exceed 1000 characters.       
         history: {history}
         Human: {input} 
         """
@@ -129,7 +129,7 @@ class GetAdvice:
         openai = ChatOpenAI(openai_api_key=openai_secret_key, model_name="gpt-3.5-turbo")
         
         template = """
-            You are a financial advisor. Based on previous advice and user feedback, focus on incorporating the feedback given. Provide updated financial advice.
+            You are a financial advisor. Based on previous advice and user feedback, focus on incorporating the feedback given. Provide updated financial advice. Keep your advice concise, highly personalized and actionable, ensuring it does not exceed 1000 characters.
             {history}
             Human: {input}
         """
