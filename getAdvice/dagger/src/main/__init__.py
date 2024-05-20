@@ -37,6 +37,7 @@ A JSON string with updated financial advice, incorporating user feedback and adj
 Example Use Case:
 
 dagger call update_prompt --feedback='I prefer more savings tips.' --data='{"current_week": {"Groceries": "$150", "Utilities": "$120"}, "previous_weeks": {"Groceries": "$130", "Utilities": "$110"}}' --openai=env:OPENAI_SECRET --connection=env:DB_CONNECTION
+
 This command processes the feedback and data, uses the updated prompt to generate new advice, and outputs refined recommendations based on the user’s input.
 
 Technical Details
