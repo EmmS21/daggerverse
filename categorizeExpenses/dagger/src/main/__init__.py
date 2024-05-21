@@ -21,6 +21,8 @@ This module includes functions to handle the retrieval and processing of transac
 Functions:
 - `process_batch`: Processes a batch of transactions by submitting descriptions to the Hugging Face model and categorizing them based on the model's predictions. This function handles API responses and segregates processed transactions from those that couldn't be categorized due to errors or API limits.
 - `categorize`: The main function of the module, orchestrating the retrieval of transaction data, invoking the `process_batch` function, and managing retries in case of failures. It ensures that all transactions are processed, leveraging asynchronous programming to handle potentially large volumes of data efficiently.
+- `adjust_batch_size`: Adjusts the batch size dynamically based on response times and API rate limits to optimize throughput.
+- `cleanup_api_call_times`: Cleans up the API call times to keep track of calls made within the last minute to manage rate limits effectively.
 
 Args:
 - `data (str)`: A JSON string containing an array of transactions, where each transaction includes a description and other relevant details.
@@ -39,26 +41,57 @@ Usage of this module can significantly streamline the process of categorizing fi
 from dagger import dag, function, object_type, Secret
 import json
 import asyncio
+import time 
 
 @object_type
 class CategorizeExpenses:
+    initial_batch_size = 50  
+    current_batch_size = initial_batch_size
+    api_call_times = []
+    response_times = []
+
     @function
     async def categorize(self, data: str, hftoken: Secret) -> str:
         """Processes transactions using an AI model from Hugging Face with retry logic for API limits."""
-        retry_delay = 10  # Delay in seconds (e.g., 5 minutes)
+        retry_delay = 5  
         processed = []
         unprocessed = json.loads(data)
 
         while unprocessed:
-            batch_processed, batch_unprocessed = await self.process_batch(unprocessed, hftoken)
+            batch_size = self.adjust_batch_size()
+            batch = unprocessed[:batch_size]
+            unprocessed = unprocessed[batch_size:]
+
+            start_time = time.time()
+            batch_processed, batch_unprocessed = await self.process_batch(batch, hftoken)
+            end_time = time.time()
+
+            self.api_call_times.append(end_time)
+            self.response_times.append(end_time - start_time)
+            self.cleanup_api_call_times()
+ 
             processed.extend(batch_processed)
-            unprocessed = batch_unprocessed
+            unprocessed = batch_unprocessed + unprocessed
 
             if unprocessed:
                 print(f"API limit reached or error occurred. {len(unprocessed)} entries remain unprocessed. Retrying after {retry_delay} seconds...")
-                await asyncio.sleep(retry_delay)  # Sleep before retrying
+                await asyncio.sleep(retry_delay)  
 
-        return json.dumps(processed, indent=4)  # Only return processed data
+        return json.dumps(processed, indent=4)  
+    
+    def adjust_batch_size(self):
+        """Adjust the batch size based on the response times and API rate limits."""
+        if len(self.api_call_times) > 1 and (self.api_call_times[-1] - self.api_call_times[0] < 60):
+            self.current_batch_size = max(1, self.current_batch_size - 1)
+        elif self.response_times and len(self.response_times) >= 5 and sum(self.response_times[-5:]) / 5 < 1:
+            self.current_batch_size += 1
+
+        return self.current_batch_size
+    
+    def cleanup_api_call_times(self):
+        """Clean up the API call times to keep track within the last minute."""
+        current_time = time.time()
+        self.api_call_times = [call_time for call_time in self.api_call_times if current_time - call_time < 60]
 
     async def process_batch(self, transactions, hftoken):
         """Processes a batch of transactions and categorizes them."""
