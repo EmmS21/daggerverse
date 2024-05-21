@@ -28,7 +28,7 @@ class FetchSpreadsheetData:
     @function
     async def fetch_data(self, apiKey: Secret, sheet: Secret) -> str:
         """Fetches transaction data from a Google Spreadsheet."""
-        python_script = """
+        fetch_script = """
 import requests
 import json
 import os
@@ -38,6 +38,14 @@ spreadsheet_id = os.environ.get('SPREADSHEET_ID')
 url = f'https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Transactions?key={api_key}'
 response = requests.get(url)
 data = response.json()
+
+print(json.dumps(data))
+"""
+        process_script = """
+import sys
+import json
+
+data = json.loads(sys.argv[1])
 
 if 'values' in data:
     headers = data['values'][0]
@@ -53,7 +61,9 @@ else:
             .with_exec(["pip", "install", "requests"])
             .with_secret_variable("API_KEY", apiKey)
             .with_secret_variable("SPREADSHEET_ID", sheet)
-            .with_exec(["python", "-c", python_script])
+            .with_exec(["python", "-c", fetch_script])
         )
+        raw_data = await container.stdout()
+        container = container.with_exec(["python", "-c", process_script, raw_data])
         output = await container.stdout()
         return output
