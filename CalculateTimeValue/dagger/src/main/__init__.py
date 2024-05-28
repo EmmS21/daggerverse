@@ -11,20 +11,17 @@ Functionality:
 - Adjusts the calculation for inflation to provide a more accurate representation of the time value of money.
 
 Args:
+- `period (int)`: The total number of months over which the time value calculation will be performed.
+- `amount (str)`: The initial amount of money to be evaluated.
+- `rate (str)`: The annual interest rate for debt or the annual return rate for stocks, provided as a decimal.
 - `fred_str (Secret)`: The API key required to authenticate requests to the FRED API. This key should have the necessary permissions to access the required data.
-- `max_period (int)`: The total number of months over which the time value calculation will be performed.
-- `inflation (float)`: The annual inflation rate as a decimal, used to adjust the future value calculations.
-- `amount (float)`: The initial amount of money to be evaluated.
-- `calculation_type (str)`: A string indicating whether the calculation is for 'debt' or 'stock'.
-- `interest_rate_or_return (float)`: The annual interest rate for debt or the annual return rate for stocks, provided as a decimal.
 
 Return:
 - The function returns a JSON formatted string. For each month in the specified period, it provides the future value of the amount as either debt or stock, adjusted for inflation. The JSON string represents an array of monthly future values, where each entry is a dictionary with the month and the calculated future value.
 
 Example Call:
- dagger call calculate --fred_str=env:FRED
+ dagger call calculate --period=12 --amount=10000 --rate=0.04 --fred_str=env:FRED
  """
-
 
 import dagger
 from dagger import dag, function, object_type, Secret
@@ -34,11 +31,11 @@ import json
 @object_type
 class CalculateTimeValue:
     @function
-    async def calculate(self, fred_str: Secret) -> str:
+    async def calculate(self, period: int, amount: str, rate: str, fred_str: Secret) -> str:
         """Returns a container that echoes whatever string argument is provided"""
         inflation_rate_str =  await self.get_inflation('CPIAUCSL', fred_str)
         inflation_rate = float(inflation_rate_str.strip('%'))/100
-        return self.calculate_time_value(24, inflation_rate, 10000, 'debt', 0.05)
+        return self.calculate_time_value(period, inflation_rate, float(amount), 'debt', float(rate))
     
     async def get_inflation(self, series_id: str, fred_str: Secret) -> float:
         api_key =  await fred_str.plaintext()
@@ -82,17 +79,3 @@ class CalculateTimeValue:
 
         result_json = json.dumps(results)
         return result_json
-
-
-
-    # @function
-    # async def grep_dir(self, directory_arg: dagger.Directory, pattern: str) -> str:
-    #     """Returns lines that match a pattern in the files of the provided Directory"""
-    #     return await (
-    #         dag.container()
-    #         .from_("alpine:latest")
-    #         .with_mounted_directory("/mnt", directory_arg)
-    #         .with_workdir("/mnt")
-    #         .with_exec(["grep", "-R", pattern, "."])
-    #         .stdout()
-    #     )
