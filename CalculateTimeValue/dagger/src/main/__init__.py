@@ -23,8 +23,7 @@ Example Call:
  dagger call calculate --period=12 --amount=10000 --rate=0.04 --fred_str=env:FRED
  """
 
-import dagger
-from dagger import dag, function, object_type, Secret
+from dagger import function, object_type, Secret
 import requests
 import json
 
