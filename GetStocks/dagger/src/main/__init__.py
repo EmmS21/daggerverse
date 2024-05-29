@@ -60,7 +60,8 @@ class GetStocks:
     async def get_historical_data(self, symbol: str) -> pd.DataFrame:
             try:
                 stock = yf.Ticker(symbol)
-                df = stock.history(period="5y", interval="1mo")  # 5 years of monthly data
+                df = stock.history(period="5y", interval="1mo")
+                df['current_price'] = stock.info['currentPrice'] if 'currentPrice' in stock.info else None
                 return df
             except Exception as e:
                 print(f"Error fetching data for {symbol}: {e}")
@@ -85,10 +86,12 @@ class GetStocks:
                 print('df', df)
                 if df is not None:
                     average_return = self.calculate_avg_return(df)
+                    current_price = df['current_price'].iloc[-1] if 'current_price' in df.columns else None
                     print('avg', average_return)
                     options.append({
                         "symbol": symbol,
-                        "average_return": average_return
+                        "average_return": average_return,
+                        "current_price": current_price
                     })
             except Exception as e:
                 print(f"Error processing {symbol}: {e}")
