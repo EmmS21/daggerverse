@@ -10,9 +10,6 @@ Functionality:
 - Calculates the average annual return for each stock based on monthly closing prices.
 - Ranks the stocks by their average annual returns and returns the top investment options.
 
-Args:
-- `alpha (Secret)`: This argument was initially required for Alpha Vantage API keys but is now redundant since `yfinance` is used. It can be ignored or removed.
-
 Return:
 - The `stocks` function returns a JSON formatted string representing the top investment options. Each investment option is a dictionary containing the stock symbol and its average annual return.
 - The `sp500` function returns a JSON string containing the list of S&P 500 company symbols.
