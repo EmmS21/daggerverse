@@ -2,7 +2,7 @@
 Module Name: GetStocks 
 
 Overview:
-This module facilitates the retrieval and analysis of stock data from the S&P 500 index. It uses web scraping to obtain the list of S&P 500 companies and `yfinance` to fetch historical stock data. The module calculates the average annual return for each stock and identifies the top investment options based on these returns.
+This module finds and returns the top 20 S&P 500 index stocks in sectors of your choosing
 
 Functionality:
 - Scrapes the S&P 500 company symbols from Wikipedia.
@@ -10,14 +10,14 @@ Functionality:
 - Calculates the average annual return for each stock based on monthly closing prices.
 - Ranks the stocks by their average annual returns and returns the top investment options.
 
+Args:
+- `sectors_of_interest (str)`: A string containing a list of all sectors you want to filter for
+
 Return:
-- The `stocks` function returns a JSON formatted string representing the top investment options. Each investment option is a dictionary containing the stock symbol and its average annual return.
-- The `sp500` function returns a JSON string containing the list of S&P 500 company symbols.
-- The `get_historical_data` function fetches and returns historical stock data as a pandas DataFrame.
-- The `calculate_avg_return` function computes the average annual return for the given historical data.
+- The `stocks` function returns a JSON formatted string representing the top investment options. Each investment option is a dictionary containing the stock symbol, its average annual return and current price
 
 Example Call:
-dagger call stocks
+dagger call stocks --sectors_of_interest="Health Care,Information Technology,Financials,Energy"
 """
 from dagger import function, object_type
 from bs4 import BeautifulSoup
@@ -30,23 +30,25 @@ import yfinance as yf
 @object_type
 class GetStocks:
     @function
-    async def stocks(self ) -> str:
-        investment_options = await self.get_investment_options()
+    async def stocks(self, sectors_of_interest: str ) -> str:
+        investment_options = await self.get_investment_options(sectors_of_interest)
         investment_df = pd.DataFrame(investment_options)
         top_investments = investment_df.sort_values(by=['average_return'], ascending=False)
         top_investments_json = top_investments.head(20).to_dict(orient='records')
         return json.dumps({"top_investments": top_investments_json})
-    def sp500(self) -> str:
+    def sp500(self, sectors_of_interest) -> str:
         """Returns a container that echoes whatever string argument is provided"""
         url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+        sectors_of_interest_list = sectors_of_interest.split(",")
         try:
             response = requests.get(url)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             table = soup.find('table', {'id': 'constituents'})
             table_html = str(table)
-            df = pd.read_html(StringIO(table_html))[0]
-            symbols = df['Symbol'].tolist()
+            df = pd.read_html(StringIO(table_html))[0]      
+            df_filtered = df[df['GICS Sector'].isin(sectors_of_interest_list)]
+            symbols = df_filtered['Symbol'].tolist()
             symbols_json = json.dumps({"symbols": symbols})
             return symbols_json
         except requests.exceptions.RequestException as e:
@@ -73,8 +75,8 @@ class GetStocks:
         except Exception as e:
             print(f"Error calculating average return: {e}")
             return float('nan')
-    async def get_investment_options(self) -> str:
-        symbols_json = self.sp500()
+    async def get_investment_options(self, sectors_of_interest: str) -> str:
+        symbols_json = self.sp500(sectors_of_interest)
         symbols = json.loads(symbols_json)["symbols"]
         options = []
         for symbol in symbols:
@@ -84,6 +86,7 @@ class GetStocks:
                 if df is not None:
                     average_return = self.calculate_avg_return(df)
                     current_price = df['current_price'].iloc[-1] if 'current_price' in df.columns else None
+
                     print('avg', average_return)
                     options.append({
                         "symbol": symbol,
