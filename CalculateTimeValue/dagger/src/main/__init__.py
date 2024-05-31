@@ -11,7 +11,7 @@ Functionality:
 - Adjusts the calculation for inflation to provide a more accurate representation of the time value of money.
 
 Args:
-- `period (int)`: The total number of months over which the time value calculation will be performed.
+- `period (int)`: The total number of years over which the time value calculation will be performed.
 - `amount (str)`: The initial amount of money to be evaluated.
 - `rate (str)`: The annual interest rate for debt or the annual return rate for stocks, provided as a decimal.
 - `fred_str (Secret)`: The API key required to authenticate requests to the FRED API. This key should have the necessary permissions to access the required data.
@@ -20,7 +20,7 @@ Return:
 - The function returns a JSON formatted string. For each month in the specified period, it provides the future value of the amount as either debt or stock, adjusted for inflation. The JSON string represents an array of monthly future values, where each entry is a dictionary with the month and the calculated future value.
 
 Example Call:
- dagger call calculate --period=12 --amount=10000 --rate=0.04 --fred_str=env:FRED
+ dagger call calculate --period=2 --amount=10000 --rate=0.04 --fred_str=env:FRED
  """
 
 from dagger import function, object_type, Secret
@@ -52,25 +52,23 @@ class CalculateTimeValue:
             inflation_rate_str = "Insufficient data to calculate annual inflation rate"
 
         return inflation_rate_str
-    def calculate_time_value(self, max_period, inflation, amount, calculation_type, interest_rate_or_return) -> str:
-        monthly_inflation_rate = (1 + inflation) ** (1 / 12) - 1
-        monthly_rate = (1 + interest_rate_or_return) ** (1 / 12) - 1
 
+    def calculate_time_value(self, max_period, inflation, amount, calculation_type, interest_rate_or_return) -> str:
         results = []
 
-        for month in range(1, max_period + 1):
+        for year in range(1, max_period + 1):
             if calculation_type == 'debt':
-                adjusted_rate = (1 + monthly_rate) / (1 + monthly_inflation_rate) - 1
-                future_value = amount * (1 + adjusted_rate) ** month
+                adjusted_rate = (1 + interest_rate_or_return) / (1 + inflation) - 1
+                future_value = amount * (1 + adjusted_rate) ** year
                 results.append({
-                    "month": month,
+                    "year": year,
                     "future_value_debt": round(future_value, 2)
                 })
             elif calculation_type == 'stock':
-                adjusted_rate = (1 + monthly_rate) / (1 + monthly_inflation_rate) - 1
-                future_value = amount * (1 + adjusted_rate) ** month
+                adjusted_rate = (1 + interest_rate_or_return) / (1 + inflation) - 1
+                future_value = amount * (1 + adjusted_rate) ** year
                 results.append({
-                    "month": month,
+                    "year": year,
                     "future_value_stock": round(future_value, 2)
                 })
             else:
