@@ -45,9 +45,8 @@ class GetStocks:
                 ret['monthly_return'] = str(ret['monthly_return'])
         return json.dumps({"top_investments": top_investments_json})
     
-    def sp500(self, sectors_of_interest) -> str:
+    def sp500(self, sectors_of_interest_list) -> str:
         url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-        sectors_of_interest_list = sectors_of_interest.split(",")
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -98,7 +97,8 @@ class GetStocks:
             return float('nan')
         
     async def get_investment_options(self, sectors_of_interest: str, period: int) -> list:
-        symbols_and_industries_json = self.sp500(sectors_of_interest)
+        sectors_of_interest_list = sectors_of_interest.split(",")
+        symbols_and_industries_json = self.sp500(sectors_of_interest_list)
         symbols_and_industries = json.loads(symbols_and_industries_json)["symbols_and_industries"]
         options = []
         for item in symbols_and_industries:
@@ -122,3 +122,4 @@ class GetStocks:
             except Exception as e:
                 print(f"Error processing {symbol}: {e}")
         return options
+        
