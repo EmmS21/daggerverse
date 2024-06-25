@@ -20,6 +20,7 @@ Return:
 
 Example Call:
 dagger call stocks --sectors_of_interest="Health Care,Information Technology,Financials,Energy" --period=5 --top=5
+
 """
 from dagger import function, object_type
 from bs4 import BeautifulSoup
