@@ -2,25 +2,23 @@
 Module Name: GetStocks 
 
 Overview:
-This module finds and returns the top N S&P 500 index stocks in sectors of your choosing grouped by sector
+This module returns S&P 500 index stocks in sectors of your choosing grouped by sector (in terms of average_return)
 
 Functionality:
 - Scrapes the S&P 500 company symbols from Wikipedia.
 - Fetches historical stock data for each symbol using `yfinance`.
 - Calculates the average annual return for each stock based on monthly closing prices.
-- Groups stocks by sector, ranks them by their average annual returns, and returns the top investment options for each sector.
+- Groups stocks by sector, ranks them by their average annual returns for each sector
 
 Args:
 - `sectors_of_interest (str)`: A string containing a list of all sectors you want to filter for.
 - `period (int)`: The number of years of historical data to fetch.
-- `top (int)`: The number of top stocks to return for each sector.
 
 Return:
-- The `stocks` function returns a JSON formatted string representing the top N investment options for each sector based on average returns. Each investment option is a dictionary containing the stock symbol, its average annual return, current price, and monthly returns.
+- The `stocks` function returns a JSON containing all stocks grouped by sector and ranked by average return. Each stock is returned as a dictionary containing the stock symbol, average return, industry, stock prices and monthly return.
 
 Example Call:
-dagger call stocks --sectors_of_interest="Health Care,Information Technology,Financials,Energy" --period=5 --top=5
-
+dagger call stocks --sectors_of_interest="Health Care,Information Technology,Financials,Energy" --period=5
 """
 from dagger import function, object_type
 from bs4 import BeautifulSoup
@@ -33,18 +31,14 @@ import yfinance as yf
 @object_type
 class GetStocks:
     @function
-    async def stocks(self, sectors_of_interest: str, period: int, top: int) -> str:
+    async def stocks(self, sectors_of_interest: str, period: int) -> str:
         investment_options = await self.get_investment_options(sectors_of_interest, period)
         investment_df = pd.DataFrame(investment_options)
-        top_investments = investment_df.groupby('industry').apply(lambda x: x.nlargest(top, 'average_return')).reset_index(drop=True)
-        top_investments_json = top_investments.to_dict(orient='records')
-        for investment in top_investments_json:
+        investment_df = investment_df.sort_values(by=['industry', 'average_return'], ascending=[True, False])
+        investments_json = investment_df.to_dict(orient='records')
+        for investment in investments_json:
             investment['average_return'] = str(investment['average_return'])
-            investment['current_price'] = str(investment['current_price'])
-            for ret in investment['returns']:
-                ret['Date'] = ret['Date'].strftime('%Y-%m-%d')  
-                ret['monthly_return'] = str(ret['monthly_return'])
-        return json.dumps({"top_investments": top_investments_json})
+        return json.dumps({"investments": investments_json})
     
     def sp500(self, sectors_of_interest_list) -> str:
         url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -72,7 +66,6 @@ class GetStocks:
             stock = yf.Ticker(symbol)
             period_str = f"{period}y"
             df = stock.history(period=period_str, interval="1mo")
-            df['current_price'] = stock.info['currentPrice'] if 'currentPrice' in stock.info else None
             return df
         except Exception as e:
             print(f"Error fetching data for {symbol}: {e}")
@@ -96,7 +89,7 @@ class GetStocks:
         except Exception as e:
             print(f"Error calculating average return: {e}")
             return float('nan')
-        
+                
     async def get_investment_options(self, sectors_of_interest: str, period: int) -> list:
         sectors_of_interest_list = sectors_of_interest.split(",")
         symbols_and_industries_json = self.sp500(sectors_of_interest_list)
@@ -110,17 +103,15 @@ class GetStocks:
                 if not df.empty:
                     df = self.calculate_returns(df)
                     average_return = self.calculate_avg_return(df)
-                    current_price = df['current_price'].iloc[-1] if 'current_price' in df.columns else None
 
                     df.reset_index(inplace=True) 
                     options.append({
                         "symbol": symbol,
                         "average_return": average_return,
-                        "current_price": current_price,
                         "industry": industry,
-                        "returns": df[['Date', 'monthly_return']].dropna().to_dict(orient='records')
+                        "stock_prices": {row['Date'].strftime('%Y-%m-%d'): row['Close'] for index, row in df.iterrows()},
+                        "monthly_return": {row['Date'].strftime('%Y-%m-%d'): row['monthly_return'] for index, row in df.iterrows()}
                     })
             except Exception as e:
                 print(f"Error processing {symbol}: {e}")
         return options
-        
