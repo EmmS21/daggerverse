@@ -1,0 +1,12 @@
+{
+  "name": "StocksToMongo",
+  "sdk": "python",
+  "dependencies": [
+    {
+      "name": "GetStocks",
+      "source": "github.com/EmmS21/daggerverse/GetStocks@cb7961bb0021b5513a4322bdd370863bd067dde5"
+    }
+  ],
+  "source": "dagger",
+  "engineVersion": "v0.11.3"
+}
