@@ -1,0 +1,6 @@
+{
+  "name": "MarketingAgent",
+  "sdk": "python",
+  "source": "dagger",
+  "engineVersion": "v0.11.3"
+}

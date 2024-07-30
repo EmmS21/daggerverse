@@ -18,7 +18,7 @@ Returns:
 - Sucess if data is successfully written
 
 Example Call:
-dagger call getStocks --connection=<Secret> --db=<str> --collection=<str> --sectors_of_interest=<str> --period=<str>
+dagger call getStocks --connection=[Secret] --db=[str] --collection=<str> --sectors_of_interest=<str> --period=<str>
 """
 
 import dagger

@@ -1,0 +1,12 @@
+{
+  "name": "vcstockbrain",
+  "sdk": "python",
+  "dependencies": [
+    {
+      "name": "GetStocks",
+      "source": "github.com/EmmS21/daggerverse/GetStocks@351e6b8e80b9ae00d2f5bef732b7fe7a7d8a6f03"
+    }
+  ],
+  "source": "dagger",
+  "engineVersion": "v0.11.3"
+}
