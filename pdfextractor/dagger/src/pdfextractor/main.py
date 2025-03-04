@@ -1,7 +1,5 @@
 import dagger
 from dagger import dag, function, object_type
-import base64
-
 
 @object_type
 class Pdfextractor:
